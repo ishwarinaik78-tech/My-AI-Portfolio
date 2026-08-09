@@ -1,0 +1,63 @@
+{
+  "personal": {
+    "name": "Ishwari D Naik",
+    "title": "AI and Software Development Enthusiast",
+    "location": "India",
+    "email": "userhere739@gmail.com",
+    "phone": "YOUR_PHONE"
+  },
+
+  "summary": "YOUR_REAL_PROFESSIONAL_SUMMARY",
+
+  "education": [
+    {
+      "degree": " Information Technology",
+      "institution": "Padre Conceicao College of Engineering",
+      "year": "2024-28"
+    }
+  ],
+
+  "skills": [
+    "Frontend - HTML, Css, JS",
+    "Backend - Java",
+    "Python",
+    "FastAPI",
+    "Git",
+    "GitHub"
+  ],
+
+  "programming_languages": [
+    "Python",
+    "HTML",
+    "Css",
+    "Javascript",
+    "C",
+    "C++",
+    "Java"
+  ],
+
+  "frameworks": [
+    "FastAPI"
+  ],
+
+  "projects": [
+    {
+      "name": "AI Resume Parser",
+      "description": "YOUR_REAL_PROJECT_DESCRIPTION",
+      "technologies": [
+        "Python",
+        "FastAPI",
+        "Groq"
+      ]
+    }
+  ],
+
+  "experience": [],
+
+  "certifications": [],
+
+  "links": {
+    "linkedin": "YOUR_LINKEDIN_URL",
+    "github": "YOUR_GITHUB_URL"
+  }
+}

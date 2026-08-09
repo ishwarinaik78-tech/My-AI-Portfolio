@@ -1,0 +1,234 @@
+import json
+import os
+import shutil
+from pathlib import Path
+
+from fastapi import (
+    FastAPI,
+    UploadFile,
+    File,
+    HTTPException
+)
+
+from fastapi.middleware.cors import CORSMiddleware
+
+from fastapi.responses import FileResponse
+
+from models import ChatRequest
+
+from parser import read_document
+
+from llm import (
+    ask_groq,
+    extract_job_requirements,
+    explain_match
+)
+
+from matcher import calculate_match
+
+from prompts import SYSTEM_PROMPT
+
+
+BASE_DIR = Path(__file__).resolve().parent
+
+DATA_DIR = BASE_DIR / "data"
+
+UPLOAD_DIR = BASE_DIR / "uploads"
+
+PROFILE_FILE = DATA_DIR / "profile.json"
+
+RESUME_FILE = DATA_DIR / "latest_resume.pdf"
+
+
+DATA_DIR.mkdir(
+    exist_ok=True
+)
+
+UPLOAD_DIR.mkdir(
+    exist_ok=True
+)
+
+
+app = FastAPI(
+    title="AI Portfolio Assistant",
+    version="1.0.0"
+)
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"]
+)
+
+
+def load_profile():
+
+    with open(
+        PROFILE_FILE,
+        "r",
+        encoding="utf-8"
+    ) as file:
+
+        return json.load(file)
+
+
+@app.get("/")
+def root():
+
+    return {
+        "message": "AI Portfolio Assistant API is running"
+    }
+
+
+@app.get("/api/profile")
+def get_profile():
+
+    return load_profile()
+
+
+@app.get("/api/resume")
+def download_resume():
+
+    if not RESUME_FILE.exists():
+
+        raise HTTPException(
+            status_code=404,
+            detail="Resume not found."
+        )
+
+    return FileResponse(
+        path=RESUME_FILE,
+        media_type="application/pdf",
+        filename="Ishwari-Resume.pdf"
+    )
+
+
+@app.post("/api/chat")
+def chat(request: ChatRequest):
+
+    profile = load_profile()
+
+    profile_text = json.dumps(
+        profile,
+        indent=2
+    )
+
+    user_prompt = f"""
+Here is the verified candidate information:
+
+{profile_text}
+
+Previous conversation:
+
+{json.dumps(request.history, indent=2)}
+
+User's new question:
+
+{request.message}
+
+Answer the question using only the verified candidate information.
+"""
+
+    answer = ask_groq(
+        SYSTEM_PROMPT,
+        user_prompt
+    )
+
+    return {
+        "answer": answer
+    }
+
+
+@app.post("/api/analyze-job")
+async def analyze_job(
+    file: UploadFile = File(...)
+):
+
+    allowed_extensions = [
+        ".pdf",
+        ".docx",
+        ".txt"
+    ]
+
+    extension = Path(
+        file.filename
+    ).suffix.lower()
+
+    if extension not in allowed_extensions:
+
+        raise HTTPException(
+            status_code=400,
+            detail="Upload PDF, DOCX or TXT only."
+        )
+
+    saved_file = (
+        UPLOAD_DIR
+        / file.filename
+    )
+
+    with open(
+        saved_file,
+        "wb"
+    ) as buffer:
+
+        shutil.copyfileobj(
+            file.file,
+            buffer
+        )
+
+    try:
+
+        job_text = read_document(
+            str(saved_file)
+        )
+
+        if not job_text.strip():
+
+            raise HTTPException(
+                status_code=400,
+                detail="Could not extract text from document."
+            )
+
+        job_requirements = (
+            extract_job_requirements(
+                job_text
+            )
+        )
+
+        profile = load_profile()
+
+        match = calculate_match(
+            profile,
+            job_requirements
+        )
+
+        explanation = explain_match(
+            profile,
+            job_requirements,
+            match
+        )
+
+        match["explanation"] = explanation
+
+        return {
+            "job": job_requirements,
+            "match": match
+        }
+
+    except Exception as error:
+
+        raise HTTPException(
+            status_code=500,
+            detail=str(error)
+        )
+
+
+@app.get("/api/health")
+def health():
+
+    return {
+        "status": "healthy"
+    }

@@ -303,29 +303,28 @@ ${match.explanation}
   // =========================================================
 
   function renderMessageContent(content) {
-    const githubUrl =
-      "https://github.com/ishwarinaik78-tech";
+  const urlRegex = /(https?:\/\/[^\s<]+)/g;
 
-    const parts = content.split(githubUrl);
+  const parts = content.split(urlRegex);
 
-    return parts.map((part, index) => (
-      <span key={index}>
-        {part}
+  return parts.map((part, index) => {
+    if (part.match(urlRegex)) {
+      return (
+        <a
+          key={index}
+          href={part}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="chat-link"
+        >
+          {part}
+        </a>
+      );
+    }
 
-        {index < parts.length - 1 && (
-          <a
-            href={githubUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="github-chat-link"
-          >
-            {githubUrl}
-          </a>
-        )}
-      </span>
-    ));
-  }
-
+    return <span key={index}>{part}</span>;
+  });
+}
   return (
     <div className="app">
 

@@ -1647,4 +1647,17 @@ button {
 .github-chat-link:hover {
   opacity: 0.8;
 }
+.chat-link {
+  color: #8b7cff;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.chat-link:hover {
+  opacity: 0.8;
+}
 }

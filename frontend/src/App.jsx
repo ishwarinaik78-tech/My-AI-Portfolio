@@ -223,32 +223,57 @@ ${match.explanation}
     setJobFile(null);
   }
 
+  // =========================================================
+  // QUICK ACTIONS
+  // =========================================================
+
   const quickActions = [
     {
       icon: "⌘",
       title: "Skills",
       text:
         "Tell me about Ishwari's technical skills.",
+      type: "chat",
     },
     {
       icon: "✦",
       title: "Projects",
       text:
         "Tell me about Ishwari's projects.",
+      type: "chat",
     },
     {
       icon: "in",
       title: "LinkedIn",
-      text:
-        "Give me Ishwari's LinkedIn profile.",
+      url:
+        "https://www.linkedin.com/in/ishwari-naik-88101240a",
+      type: "link",
     },
     {
       icon: "◈",
       title: "GitHub",
-      text:
-        "Give me Ishwari's GitHub profile.",
+      url:
+        "https://github.com/ishwarinaik78-tech",
+      type: "link",
     },
   ];
+
+  // =========================================================
+  // QUICK ACTION HANDLER
+  // =========================================================
+
+  function handleQuickAction(action) {
+    if (action.type === "link") {
+      window.open(
+        action.url,
+        "_blank",
+        "noopener,noreferrer"
+      );
+      return;
+    }
+
+    sendMessage(action.text);
+  }
 
   return (
     <div className="app">
@@ -268,8 +293,13 @@ ${match.explanation}
             </div>
 
             <div className="brand-info">
-              <strong>Ishwari AI</strong>
-              <span>Personal Portfolio</span>
+              <strong>
+                Ishwari AI
+              </strong>
+
+              <span>
+                Personal Portfolio
+              </span>
             </div>
 
           </div>
@@ -278,6 +308,7 @@ ${match.explanation}
           <button
             className="new-chat"
             onClick={newChat}
+            type="button"
           >
             <span>＋</span>
             New conversation
@@ -296,8 +327,9 @@ ${match.explanation}
                 <button
                   key={index}
                   onClick={() =>
-                    sendMessage(action.text)
+                    handleQuickAction(action)
                   }
+                  type="button"
                 >
 
                   <span className="quick-icon">
@@ -345,6 +377,7 @@ ${match.explanation}
           <button
             className="resume-button"
             onClick={downloadResume}
+            type="button"
           >
             <span>↓</span>
             Download Resume
@@ -450,7 +483,9 @@ ${match.explanation}
                 <h1>
                   Meet Ishwari,
                   <br />
-                  <span>through AI.</span>
+                  <span>
+                    through AI.
+                  </span>
                 </h1>
 
 
@@ -469,10 +504,9 @@ ${match.explanation}
                       <button
                         key={index}
                         onClick={() =>
-                          sendMessage(
-                            action.text
-                          )
+                          handleQuickAction(action)
                         }
+                        type="button"
                       >
 
                         <span>
@@ -480,17 +514,22 @@ ${match.explanation}
                         </span>
 
                         <div>
+
                           <strong>
                             {action.title}
                           </strong>
 
                           <small>
-                            Ask about my{" "}
-                            {action.title.toLowerCase()}
+                            {action.type === "link"
+                              ? `Open my ${action.title}`
+                              : `Ask about my ${action.title.toLowerCase()}`}
                           </small>
+
                         </div>
 
-                        <b>→</b>
+                        <b>
+                          →
+                        </b>
 
                       </button>
                     )
@@ -506,6 +545,7 @@ ${match.explanation}
                   </div>
 
                   <div>
+
                     <strong>
                       Hiring for a role?
                     </strong>
@@ -515,6 +555,7 @@ ${match.explanation}
                       and get an honest compatibility
                       analysis.
                     </span>
+
                   </div>
 
                 </div>

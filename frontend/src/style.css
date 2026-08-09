@@ -1503,4 +1503,16 @@ button {
     align-items: flex-start;
   }
 
+
+}
+.profile-link {
+  color: #8b7cff;
+  text-decoration: none;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.profile-link:hover {
+  text-decoration: underline;
+  opacity: 0.85;
 }

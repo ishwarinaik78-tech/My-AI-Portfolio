@@ -2,35 +2,44 @@
   "personal": {
     "name": "Ishwari D Naik",
     "title": "AI and Software Development Enthusiast",
-    "location": "India",
+    "location": "Goa, India",
     "email": "userhere739@gmail.com",
-    "phone": "YOUR_PHONE"
+    "phone": "907597...."
   },
 
-  "summary": "YOUR_REAL_PROFESSIONAL_SUMMARY",
+  "summary": "AI/ML and Software Development enthusiast with hands-on experience building AI-powered applications using Python, FastAPI, APIs, and LLMs. Continuously building and learning through practical projects involving resume parsing, job matching, document processing, RAG, AI assistants, and full-stack application development. Familiar with prompt engineering, Git, GitHub, and API integration.",
 
   "education": [
     {
-      "degree": " Information Technology",
+      "degree": "Information Technology",
       "institution": "Padre Conceicao College of Engineering",
       "year": "2024-28"
     }
   ],
 
   "skills": [
-    "Frontend - HTML, Css, JS",
-    "Backend - Java",
     "Python",
     "FastAPI",
+    "HTML",
+    "CSS",
+    "JavaScript",
+    "Java",
+    "C",
+    "C++",
     "Git",
-    "GitHub"
+    "GitHub",
+    "REST APIs",
+    "LLMs",
+    "RAG",
+    "Prompt Engineering",
+    "AI/ML"
   ],
 
   "programming_languages": [
     "Python",
     "HTML",
-    "Css",
-    "Javascript",
+    "CSS",
+    "JavaScript",
     "C",
     "C++",
     "Java"
@@ -40,24 +49,73 @@
     "FastAPI"
   ],
 
-  "projects": [
+  "libraries_and_tools": [
+    "Groq API",
+    "Pydantic",
+    "python-dotenv",
+    "PyPDF"
+  ],
+
+  "experience": [
     {
-      "name": "AI Resume Parser",
-      "description": "YOUR_REAL_PROJECT_DESCRIPTION",
+      "role": "AI & Software Development",
+      "type": "Hands-on Project Experience",
+      "status": "Ongoing",
+      "description": "Continuously developing practical AI and software applications while expanding skills in Python, FastAPI, LLMs, RAG, APIs, document processing, and full-stack development. Current work includes AI-powered resume parsing, job matching, document processing, and AI portfolio applications.",
       "technologies": [
         "Python",
         "FastAPI",
-        "Groq"
+        "LLMs",
+        "Groq",
+        "RAG",
+        "REST APIs",
+        "Git",
+        "GitHub"
       ]
     }
   ],
-
-  "experience": [],
+"projects": [
+  {
+    "name": "PlantLens - Plant Identification Application",
+    "description": "PlantLens is a mobile application designed to identify plants using leaf images. Users can capture or upload plant images, and the application analyzes the image to recognize the plant. The project aims to help students and plant enthusiasts learn about plants in an easy and interactive way.",
+    "technologies": [
+      "Mobile Application Development",
+      "Image Processing",
+      "Python"
+    ]
+  },
+  {
+    "name": "AI Resume Parser",
+    "description": "An AI-powered resume parsing application that processes resume documents and extracts structured information such as personal details, education, skills, and experience. The application uses Python, FastAPI, PDF processing, Pydantic, and an LLM to convert unstructured resume content into structured data.",
+    "technologies": [
+      "Python",
+      "FastAPI",
+      "Groq",
+      "LLMs",
+      "Pydantic",
+      "PyPDF"
+    ]
+  },
+  {
+    "name": "AI Portfolio / Hire-Me Assistant",
+    "description": "An AI-powered portfolio application designed to present personal skills, education, projects, and experience while allowing recruiters to interact with an AI assistant. Recruiters can provide or upload a job description and ask the assistant to evaluate the candidate's suitability by comparing job requirements with the candidate's actual profile. The system is designed to provide honest assessments without inventing qualifications, experience, or skills.",
+    "technologies": [
+      "Python",
+      "FastAPI",
+      "Groq",
+      "LLMs",
+      "RAG",
+      "PDF Processing",
+      "React"
+    ]
+  }
+],
 
   "certifications": [],
 
-  "links": {
-    "linkedin": "YOUR_LINKEDIN_URL",
-    "github": "YOUR_GITHUB_URL"
-  }
+ 
+   "links": {
+  "linkedin": "https://www.linkedin.com/in/ishwari-naik-88101240a",
+  "github": "https://github.com/ishwarinaik78-tech"
+}
 }

@@ -1,5 +1,4 @@
 import json
-import os
 import shutil
 from pathlib import Path
 
@@ -57,7 +56,10 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"]
@@ -66,13 +68,29 @@ app.add_middleware(
 
 def load_profile():
 
-    with open(
-        PROFILE_FILE,
-        "r",
-        encoding="utf-8"
-    ) as file:
+    if not PROFILE_FILE.exists():
 
-        return json.load(file)
+        raise HTTPException(
+            status_code=404,
+            detail="Profile data not found."
+        )
+
+    try:
+
+        with open(
+            PROFILE_FILE,
+            "r",
+            encoding="utf-8"
+        ) as file:
+
+            return json.load(file)
+
+    except json.JSONDecodeError:
+
+        raise HTTPException(
+            status_code=500,
+            detail="profile.json contains invalid JSON."
+        )
 
 
 @app.get("/")
@@ -109,11 +127,19 @@ def download_resume():
 @app.post("/api/chat")
 def chat(request: ChatRequest):
 
+    if not request.message.strip():
+
+        raise HTTPException(
+            status_code=400,
+            detail="Message cannot be empty."
+        )
+
     profile = load_profile()
 
     profile_text = json.dumps(
         profile,
-        indent=2
+        indent=2,
+        ensure_ascii=False
     )
 
     user_prompt = f"""
@@ -123,23 +149,41 @@ Here is the verified candidate information:
 
 Previous conversation:
 
-{json.dumps(request.history, indent=2)}
+{json.dumps(request.history, indent=2, ensure_ascii=False)}
 
 User's new question:
 
 {request.message}
 
-Answer the question using only the verified candidate information.
+Answer the question using ONLY the verified candidate information.
+
+Important:
+
+- Use the actual values from the candidate profile.
+- If the user asks for GitHub, return the actual GitHub URL from links.github.
+- If the user asks for LinkedIn, return the actual LinkedIn URL from links.linkedin.
+- If the user asks for projects, include ALL projects from the projects array.
+- Never use placeholders such as YOUR_GITHUB_URL or YOUR_LINKEDIN_URL.
+- Never invent information.
 """
 
-    answer = ask_groq(
-        SYSTEM_PROMPT,
-        user_prompt
-    )
+    try:
 
-    return {
-        "answer": answer
-    }
+        answer = ask_groq(
+            SYSTEM_PROMPT,
+            user_prompt
+        )
+
+        return {
+            "answer": answer
+        }
+
+    except Exception as error:
+
+        raise HTTPException(
+            status_code=500,
+            detail=f"AI request failed: {str(error)}"
+        )
 
 
 @app.post("/api/analyze-job")
@@ -147,14 +191,25 @@ async def analyze_job(
     file: UploadFile = File(...)
 ):
 
+    if not file.filename:
+
+        raise HTTPException(
+            status_code=400,
+            detail="No file selected."
+        )
+
     allowed_extensions = [
         ".pdf",
         ".docx",
         ".txt"
     ]
 
-    extension = Path(
+    original_filename = Path(
         file.filename
+    ).name
+
+    extension = Path(
+        original_filename
     ).suffix.lower()
 
     if extension not in allowed_extensions:
@@ -166,20 +221,20 @@ async def analyze_job(
 
     saved_file = (
         UPLOAD_DIR
-        / file.filename
+        / original_filename
     )
 
-    with open(
-        saved_file,
-        "wb"
-    ) as buffer:
-
-        shutil.copyfileobj(
-            file.file,
-            buffer
-        )
-
     try:
+
+        with open(
+            saved_file,
+            "wb"
+        ) as buffer:
+
+            shutil.copyfileobj(
+                file.file,
+                buffer
+            )
 
         job_text = read_document(
             str(saved_file)
@@ -218,12 +273,25 @@ async def analyze_job(
             "match": match
         }
 
+    except HTTPException:
+        raise
+
     except Exception as error:
 
         raise HTTPException(
             status_code=500,
-            detail=str(error)
+            detail=f"Job analysis failed: {str(error)}"
         )
+
+    finally:
+
+        try:
+
+            if saved_file.exists():
+                saved_file.unlink()
+
+        except Exception:
+            pass
 
 
 @app.get("/api/health")

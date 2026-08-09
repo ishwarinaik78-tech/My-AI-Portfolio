@@ -18,6 +18,10 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [jobFile, setJobFile] = useState(null);
 
+  // =========================================================
+  // CHAT
+  // =========================================================
+
   async function sendMessage(customInput = null) {
     const messageText =
       customInput !== null ? customInput : input;
@@ -82,6 +86,10 @@ function App() {
       setLoading(false);
     }
   }
+
+  // =========================================================
+  // JOB ANALYSIS
+  // =========================================================
 
   async function analyzeJob() {
     if (!jobFile || loading) {
@@ -203,12 +211,20 @@ ${match.explanation}
     }
   }
 
+  // =========================================================
+  // RESUME
+  // =========================================================
+
   function downloadResume() {
     window.open(
       `${API_URL}/api/resume`,
       "_blank"
     );
   }
+
+  // =========================================================
+  // NEW CHAT
+  // =========================================================
 
   function newChat() {
     setMessages([
@@ -225,6 +241,9 @@ ${match.explanation}
 
   // =========================================================
   // QUICK ACTIONS
+  // IMPORTANT:
+  // GitHub + LinkedIn remain direct redirects.
+  // Skills + Projects remain chat actions.
   // =========================================================
 
   const quickActions = [
@@ -269,18 +288,50 @@ ${match.explanation}
         "_blank",
         "noopener,noreferrer"
       );
+
       return;
     }
 
     sendMessage(action.text);
   }
 
+  // =========================================================
+  // IMPORTANT:
+  // ONLY MAKE THE GITHUB URL IN AI CHAT RESPONSES CLICKABLE.
+  //
+  // Everything else in the chat stays plain text.
+  // =========================================================
+
+  function renderMessageContent(content) {
+    const githubUrl =
+      "https://github.com/ishwarinaik78-tech";
+
+    const parts = content.split(githubUrl);
+
+    return parts.map((part, index) => (
+      <span key={index}>
+        {part}
+
+        {index < parts.length - 1 && (
+          <a
+            href={githubUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="github-chat-link"
+          >
+            {githubUrl}
+          </a>
+        )}
+      </span>
+    ));
+  }
+
   return (
     <div className="app">
 
-      {/* =========================
+      {/* =====================================================
           SIDEBAR
-      ========================= */}
+      ===================================================== */}
 
       <aside className="sidebar">
 
@@ -293,6 +344,7 @@ ${match.explanation}
             </div>
 
             <div className="brand-info">
+
               <strong>
                 Ishwari AI
               </strong>
@@ -300,10 +352,10 @@ ${match.explanation}
               <span>
                 Personal Portfolio
               </span>
+
             </div>
 
           </div>
-
 
           <button
             className="new-chat"
@@ -314,11 +366,9 @@ ${match.explanation}
             New conversation
           </button>
 
-
           <div className="sidebar-heading">
             EXPLORE
           </div>
-
 
           <div className="quick-actions">
 
@@ -352,7 +402,6 @@ ${match.explanation}
 
         </div>
 
-
         <div className="sidebar-bottom">
 
           <div className="truth-card">
@@ -362,6 +411,7 @@ ${match.explanation}
             </div>
 
             <div>
+
               <strong>
                 Truth-first AI
               </strong>
@@ -369,10 +419,10 @@ ${match.explanation}
               <span>
                 No invented qualifications.
               </span>
+
             </div>
 
           </div>
-
 
           <button
             className="resume-button"
@@ -387,10 +437,9 @@ ${match.explanation}
 
       </aside>
 
-
-      {/* =========================
+      {/* =====================================================
           MAIN
-      ========================= */}
+      ===================================================== */}
 
       <main className="main">
 
@@ -410,8 +459,7 @@ ${match.explanation}
 
           </div>
 
-
-          {/* MOBILE RESUME BUTTON */}
+          {/* MOBILE RESUME */}
 
           <button
             className="mobile-resume-button"
@@ -421,7 +469,6 @@ ${match.explanation}
             <span>↓</span>
             Resume
           </button>
-
 
           {/* DESKTOP TITLE */}
 
@@ -437,8 +484,7 @@ ${match.explanation}
 
           </div>
 
-
-          {/* STATUS */}
+          {/* ONLINE STATUS */}
 
           <div className="status">
 
@@ -450,10 +496,9 @@ ${match.explanation}
 
         </header>
 
-
-        {/* =========================
+        {/* ===================================================
             CHAT
-        ========================= */}
+        =================================================== */}
 
         <section className="chat">
 
@@ -474,11 +519,9 @@ ${match.explanation}
 
                 </div>
 
-
                 <div className="eyebrow">
                   AI-POWERED PORTFOLIO
                 </div>
-
 
                 <h1>
                   Meet Ishwari,
@@ -488,7 +531,6 @@ ${match.explanation}
                   </span>
                 </h1>
 
-
                 <p className="welcome-text">
                   Explore my skills, projects and
                   experience through a conversational
@@ -496,11 +538,11 @@ ${match.explanation}
                   description and check my actual fit.
                 </p>
 
-
                 <div className="welcome-actions">
 
                   {quickActions.map(
                     (action, index) => (
+
                       <button
                         key={index}
                         onClick={() =>
@@ -532,11 +574,11 @@ ${match.explanation}
                         </b>
 
                       </button>
+
                     )
                   )}
 
                 </div>
-
 
                 <div className="hire-card">
 
@@ -588,15 +630,15 @@ ${match.explanation}
                         : "I"}
                     </div>
 
-
                     <div className="message-body">
 
                       <div className="message-label">
+
                         {message.role === "user"
                           ? "You"
                           : "Ishwari AI"}
-                      </div>
 
+                      </div>
 
                       <div className="bubble">
 
@@ -604,6 +646,7 @@ ${match.explanation}
                           .split("\n")
                           .map(
                             (line, i) => (
+
                               <div
                                 key={i}
                                 className={
@@ -612,8 +655,16 @@ ${match.explanation}
                                     : ""
                                 }
                               >
-                                {line}
+
+                                {message.role ===
+                                "assistant"
+                                  ? renderMessageContent(
+                                      line
+                                    )
+                                  : line}
+
                               </div>
+
                             )
                           )}
 
@@ -628,8 +679,9 @@ ${match.explanation}
 
             )}
 
-
-            {/* LOADING */}
+            {/* =================================================
+                LOADING
+            ================================================= */}
 
             {loading && (
 
@@ -661,10 +713,9 @@ ${match.explanation}
 
           </div>
 
-
-          {/* =========================
+          {/* =================================================
               COMPOSER
-          ========================= */}
+          ================================================= */}
 
           <div className="composer-area">
 
@@ -692,7 +743,6 @@ ${match.explanation}
 
                 </div>
 
-
                 <div className="file-actions">
 
                   <button
@@ -719,7 +769,6 @@ ${match.explanation}
 
             )}
 
-
             <div className="composer">
 
               <label className="upload">
@@ -739,11 +788,12 @@ ${match.explanation}
 
               </label>
 
-
               <input
                 value={input}
                 onChange={(event) =>
-                  setInput(event.target.value)
+                  setInput(
+                    event.target.value
+                  )
                 }
                 onKeyDown={(event) => {
 
@@ -751,15 +801,17 @@ ${match.explanation}
                     event.key === "Enter" &&
                     !event.shiftKey
                   ) {
+
                     event.preventDefault();
+
                     sendMessage();
+
                   }
 
                 }}
                 placeholder="Ask anything about Ishwari..."
                 disabled={loading}
               />
-
 
               <button
                 className="send"
@@ -776,7 +828,6 @@ ${match.explanation}
               </button>
 
             </div>
-
 
             <div className="composer-footer">
 

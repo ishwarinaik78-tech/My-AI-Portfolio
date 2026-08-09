@@ -1634,5 +1634,17 @@ button {
   .file-preview {
     align-items: flex-start;
   }
+.github-chat-link {
+  color: #8b7cff;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
 
+.github-chat-link:hover {
+  opacity: 0.8;
+}
 }

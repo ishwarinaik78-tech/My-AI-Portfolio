@@ -5,7 +5,52 @@ const API_URL =
   import.meta.env.VITE_API_URL ||
   "http://127.0.0.1:8000";
 
+/* =========================================================
+   MAKE URLS INSIDE AI RESPONSES CLICKABLE
+========================================================= */
+
+function renderMessageContent(content) {
+  const urlRegex = /(https?:\/\/[^\s<]+)/g;
+
+  return content.split("\n").map((line, lineIndex) => {
+    const parts = line.split(urlRegex);
+
+    return (
+      <div
+        key={lineIndex}
+        className={line === "" ? "blank-line" : ""}
+      >
+        {parts.map((part, index) => {
+          if (part.match(/^https?:\/\//)) {
+            const cleanUrl = part.replace(/[),.!?;:]+$/, "");
+
+            return (
+              <a
+                key={index}
+                href={cleanUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="chat-link"
+              >
+                {cleanUrl}
+              </a>
+            );
+          }
+
+          return part;
+        })}
+      </div>
+    );
+  });
+}
+
+
+/* =========================================================
+   APP
+========================================================= */
+
 function App() {
+
   const [messages, setMessages] = useState([
     {
       role: "assistant",
@@ -15,12 +60,22 @@ function App() {
   ]);
 
   const [input, setInput] = useState("");
+
   const [loading, setLoading] = useState(false);
+
   const [jobFile, setJobFile] = useState(null);
 
+
+  /* =========================================================
+     SEND CHAT MESSAGE
+  ========================================================= */
+
   async function sendMessage(customInput = null) {
+
     const messageText =
-      customInput !== null ? customInput : input;
+      customInput !== null
+        ? customInput
+        : input;
 
     if (!messageText.trim() || loading) {
       return;
@@ -37,16 +92,20 @@ function App() {
     ]);
 
     setInput("");
+
     setLoading(true);
 
     try {
+
       const response = await fetch(
         `${API_URL}/api/chat`,
         {
           method: "POST",
+
           headers: {
             "Content-Type": "application/json",
           },
+
           body: JSON.stringify({
             message: messageText,
             history: messages,
@@ -54,7 +113,9 @@ function App() {
         }
       );
 
+
       const data = await response.json();
+
 
       if (!response.ok) {
         throw new Error(
@@ -62,36 +123,52 @@ function App() {
         );
       }
 
+
       setMessages((previous) => [
         ...previous,
+
         {
           role: "assistant",
           content: data.answer,
         },
       ]);
+
     } catch (error) {
+
       setMessages((previous) => [
         ...previous,
+
         {
           role: "assistant",
           content:
             "Sorry, I couldn't connect to the backend. Please make sure your FastAPI server is running.",
         },
       ]);
+
     } finally {
+
       setLoading(false);
+
     }
   }
 
+
+  /* =========================================================
+     JOB ANALYSIS
+  ========================================================= */
+
   async function analyzeJob() {
+
     if (!jobFile || loading) {
       return;
     }
 
     setLoading(true);
 
+
     setMessages((previous) => [
       ...previous,
+
       {
         role: "user",
         content:
@@ -99,11 +176,14 @@ function App() {
       },
     ]);
 
+
     const formData = new FormData();
 
     formData.append("file", jobFile);
 
+
     try {
+
       const response = await fetch(
         `${API_URL}/api/analyze-job`,
         {
@@ -112,15 +192,21 @@ function App() {
         }
       );
 
+
       const data = await response.json();
 
+
       if (!response.ok) {
+
         throw new Error(
           data.detail || "Analysis failed"
         );
+
       }
 
+
       const match = data.match;
+
 
       const result = `
 JOB FIT ANALYSIS
@@ -134,7 +220,9 @@ MATCHED SKILLS
 ${
   match.matched_skills.length
     ? match.matched_skills
-        .map((skill) => `✓ ${skill}`)
+        .map(
+          (skill) => `✓ ${skill}`
+        )
         .join("\n")
     : "None"
 }
@@ -144,7 +232,9 @@ MISSING REQUIRED SKILLS
 ${
   match.missing_required_skills.length
     ? match.missing_required_skills
-        .map((skill) => `✗ ${skill}`)
+        .map(
+          (skill) => `✗ ${skill}`
+        )
         .join("\n")
     : "None"
 }
@@ -154,7 +244,9 @@ MISSING PREFERRED SKILLS
 ${
   match.missing_preferred_skills.length
     ? match.missing_preferred_skills
-        .map((skill) => `• ${skill}`)
+        .map(
+          (skill) => `• ${skill}`
+        )
         .join("\n")
     : "None"
 }
@@ -180,37 +272,61 @@ EXPLANATION
 ${match.explanation}
 `;
 
+
       setMessages((previous) => [
         ...previous,
+
         {
           role: "assistant",
           content: result,
         },
       ]);
 
+
       setJobFile(null);
+
+
     } catch (error) {
+
       setMessages((previous) => [
         ...previous,
+
         {
           role: "assistant",
           content:
             `Error: ${error.message}`,
         },
       ]);
+
     } finally {
+
       setLoading(false);
+
     }
   }
 
+
+  /* =========================================================
+     RESUME
+  ========================================================= */
+
   function downloadResume() {
+
     window.open(
       `${API_URL}/api/resume`,
-      "_blank"
+      "_blank",
+      "noopener,noreferrer"
     );
+
   }
 
+
+  /* =========================================================
+     NEW CHAT
+  ========================================================= */
+
   function newChat() {
+
     setMessages([
       {
         role: "assistant",
@@ -220,14 +336,18 @@ ${match.explanation}
     ]);
 
     setInput("");
+
     setJobFile(null);
+
   }
 
-  // =========================================================
-  // QUICK ACTIONS
-  // =========================================================
+
+  /* =========================================================
+     QUICK ACTIONS
+  ========================================================= */
 
   const quickActions = [
+
     {
       icon: "⌘",
       title: "Skills",
@@ -235,6 +355,7 @@ ${match.explanation}
         "Tell me about Ishwari's technical skills.",
       type: "chat",
     },
+
     {
       icon: "✦",
       title: "Projects",
@@ -242,6 +363,7 @@ ${match.explanation}
         "Tell me about Ishwari's projects.",
       type: "chat",
     },
+
     {
       icon: "in",
       title: "LinkedIn",
@@ -249,6 +371,7 @@ ${match.explanation}
         "https://www.linkedin.com/in/ishwari-naik-88101240a",
       type: "link",
     },
+
     {
       icon: "◈",
       title: "GitHub",
@@ -256,31 +379,43 @@ ${match.explanation}
         "https://github.com/ishwarinaik78-tech",
       type: "link",
     },
+
   ];
 
-  // =========================================================
-  // QUICK ACTION HANDLER
-  // =========================================================
+
+  /* =========================================================
+     QUICK ACTION HANDLER
+  ========================================================= */
 
   function handleQuickAction(action) {
+
     if (action.type === "link") {
+
       window.open(
         action.url,
         "_blank",
         "noopener,noreferrer"
       );
+
       return;
     }
 
     sendMessage(action.text);
   }
 
+
+  /* =========================================================
+     RETURN
+  ========================================================= */
+
   return (
+
     <div className="app">
 
-      {/* =========================
+
+      {/* =====================================================
           SIDEBAR
-      ========================= */}
+      ===================================================== */}
 
       <aside className="sidebar">
 
@@ -293,6 +428,7 @@ ${match.explanation}
             </div>
 
             <div className="brand-info">
+
               <strong>
                 Ishwari AI
               </strong>
@@ -300,6 +436,7 @@ ${match.explanation}
               <span>
                 Personal Portfolio
               </span>
+
             </div>
 
           </div>
@@ -310,8 +447,13 @@ ${match.explanation}
             onClick={newChat}
             type="button"
           >
-            <span>＋</span>
+
+            <span>
+              ＋
+            </span>
+
             New conversation
+
           </button>
 
 
@@ -324,6 +466,7 @@ ${match.explanation}
 
             {quickActions.map(
               (action, index) => (
+
                 <button
                   key={index}
                   onClick={() =>
@@ -345,6 +488,7 @@ ${match.explanation}
                   </span>
 
                 </button>
+
               )
             )}
 
@@ -355,6 +499,7 @@ ${match.explanation}
 
         <div className="sidebar-bottom">
 
+
           <div className="truth-card">
 
             <div className="truth-icon">
@@ -362,6 +507,7 @@ ${match.explanation}
             </div>
 
             <div>
+
               <strong>
                 Truth-first AI
               </strong>
@@ -369,6 +515,7 @@ ${match.explanation}
               <span>
                 No invented qualifications.
               </span>
+
             </div>
 
           </div>
@@ -379,22 +526,30 @@ ${match.explanation}
             onClick={downloadResume}
             type="button"
           >
-            <span>↓</span>
+
+            <span>
+              ↓
+            </span>
+
             Download Resume
+
           </button>
+
 
         </div>
 
       </aside>
 
 
-      {/* =========================
+      {/* =====================================================
           MAIN
-      ========================= */}
+      ===================================================== */}
 
       <main className="main">
 
+
         <header className="topbar">
+
 
           {/* MOBILE BRAND */}
 
@@ -411,15 +566,20 @@ ${match.explanation}
           </div>
 
 
-          {/* MOBILE RESUME BUTTON */}
+          {/* MOBILE RESUME */}
 
           <button
             className="mobile-resume-button"
             onClick={downloadResume}
             type="button"
           >
-            <span>↓</span>
+
+            <span>
+              ↓
+            </span>
+
             Resume
+
           </button>
 
 
@@ -451,18 +611,25 @@ ${match.explanation}
         </header>
 
 
-        {/* =========================
+        {/* =====================================================
             CHAT
-        ========================= */}
+        ===================================================== */}
 
         <section className="chat">
 
+
           <div className="messages">
+
+
+            {/* =================================================
+                WELCOME SCREEN
+            ================================================= */}
 
             {messages.length === 1 &&
             messages[0].role === "assistant" ? (
 
               <div className="welcome">
+
 
                 <div className="glow-orb">
 
@@ -481,26 +648,34 @@ ${match.explanation}
 
 
                 <h1>
+
                   Meet Ishwari,
+
                   <br />
+
                   <span>
                     through AI.
                   </span>
+
                 </h1>
 
 
                 <p className="welcome-text">
+
                   Explore my skills, projects and
                   experience through a conversational
                   portfolio. You can even upload a job
                   description and check my actual fit.
+
                 </p>
 
 
                 <div className="welcome-actions">
 
+
                   {quickActions.map(
                     (action, index) => (
+
                       <button
                         key={index}
                         onClick={() =>
@@ -513,6 +688,7 @@ ${match.explanation}
                           {action.icon}
                         </span>
 
+
                         <div>
 
                           <strong>
@@ -520,18 +696,22 @@ ${match.explanation}
                           </strong>
 
                           <small>
+
                             {action.type === "link"
                               ? `Open my ${action.title}`
                               : `Ask about my ${action.title.toLowerCase()}`}
+
                           </small>
 
                         </div>
+
 
                         <b>
                           →
                         </b>
 
                       </button>
+
                     )
                   )}
 
@@ -544,6 +724,7 @@ ${match.explanation}
                     ↑
                   </div>
 
+
                   <div>
 
                     <strong>
@@ -551,18 +732,27 @@ ${match.explanation}
                     </strong>
 
                     <span>
+
                       Upload a job description below
                       and get an honest compatibility
                       analysis.
+
                     </span>
 
                   </div>
 
                 </div>
 
+
               </div>
 
+
             ) : (
+
+
+              /* =================================================
+                 CHAT MESSAGES
+              ================================================= */
 
               messages.map(
                 (message, index) => (
@@ -576,6 +766,7 @@ ${match.explanation}
                     }
                   >
 
+
                     <div
                       className={
                         message.role === "user"
@@ -583,67 +774,67 @@ ${match.explanation}
                           : "avatar ai-avatar"
                       }
                     >
+
                       {message.role === "user"
                         ? "You"
                         : "I"}
+
                     </div>
 
 
                     <div className="message-body">
 
+
                       <div className="message-label">
+
                         {message.role === "user"
                           ? "You"
                           : "Ishwari AI"}
+
                       </div>
 
 
                       <div className="bubble">
 
-                        {message.content
-                          .split("\n")
-                          .map(
-                            (line, i) => (
-                              <div
-                                key={i}
-                                className={
-                                  line === ""
-                                    ? "blank-line"
-                                    : ""
-                                }
-                              >
-                                {line}
-                              </div>
-                            )
-                          )}
+                        {renderMessageContent(
+                          message.content
+                        )}
 
                       </div>
+
 
                     </div>
 
                   </div>
 
                 )
+
               )
 
             )}
 
 
-            {/* LOADING */}
+            {/* =================================================
+                LOADING
+            ================================================= */}
 
             {loading && (
 
               <div className="message assistant-message">
 
+
                 <div className="avatar ai-avatar">
                   I
                 </div>
 
+
                 <div className="message-body">
+
 
                   <div className="message-label">
                     Ishwari AI
                   </div>
+
 
                   <div className="bubble thinking">
 
@@ -652,6 +843,7 @@ ${match.explanation}
                     <span></span>
 
                   </div>
+
 
                 </div>
 
@@ -662,21 +854,27 @@ ${match.explanation}
           </div>
 
 
-          {/* =========================
+          {/* =====================================================
               COMPOSER
-          ========================= */}
+          ===================================================== */}
 
           <div className="composer-area">
+
+
+            {/* JOB FILE */}
 
             {jobFile && (
 
               <div className="file-preview">
 
+
                 <div className="file-left">
+
 
                   <div className="file-icon">
                     PDF
                   </div>
+
 
                   <div>
 
@@ -690,10 +888,12 @@ ${match.explanation}
 
                   </div>
 
+
                 </div>
 
 
                 <div className="file-actions">
+
 
                   <button
                     className="remove-file"
@@ -705,6 +905,7 @@ ${match.explanation}
                     ×
                   </button>
 
+
                   <button
                     className="analyze"
                     onClick={analyzeJob}
@@ -713,18 +914,26 @@ ${match.explanation}
                     Analyze Job →
                   </button>
 
+
                 </div>
+
 
               </div>
 
             )}
 
 
+            {/* COMPOSER */}
+
             <div className="composer">
+
 
               <label className="upload">
 
-                <span>＋</span>
+                <span>
+                  ＋
+                </span>
+
 
                 <input
                   type="file"
@@ -751,8 +960,11 @@ ${match.explanation}
                     event.key === "Enter" &&
                     !event.shiftKey
                   ) {
+
                     event.preventDefault();
+
                     sendMessage();
+
                   }
 
                 }}
@@ -775,6 +987,7 @@ ${match.explanation}
                 ↑
               </button>
 
+
             </div>
 
 
@@ -791,13 +1004,16 @@ ${match.explanation}
 
             </div>
 
+
           </div>
+
 
         </section>
 
       </main>
 
     </div>
+
   );
 }
 
